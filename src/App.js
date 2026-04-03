@@ -6,7 +6,6 @@ import {
   Database, Cpu, Globe, Code
 } from 'lucide-react';
 
-// --- APNA RENDER URL YAHAN DALO ---
 const API_URL = "https://phishguard-backend-nwnc.onrender.com"; 
 
 export default function App() {
@@ -15,7 +14,6 @@ export default function App() {
   const [userEmail, setUserEmail] = useState("");
   const [scanHistory, setScanHistory] = useState([]);
 
-  // Login check on load
   useEffect(() => {
     const savedEmail = localStorage.getItem("userEmail");
     if (savedEmail) {
@@ -38,27 +36,21 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 font-sans">
-      {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col">
         <div className="p-6 flex items-center gap-3 border-b border-slate-800">
           <Shield className="w-8 h-8 text-blue-500" />
           <span className="text-xl font-bold tracking-wider">PhishGuard</span>
         </div>
-        
         <nav className="flex-1 p-4 space-y-2">
           <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" isActive={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
           <NavItem icon={<Search size={20} />} label="New Scan" isActive={activeTab === 'scan'} onClick={() => setActiveTab('scan')} />
           <NavItem icon={<History size={20} />} label="Scan History" isActive={activeTab === 'history'} onClick={() => setActiveTab('history')} />
         </nav>
-
         <div className="p-4 border-t border-slate-800">
           <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-              <User size={16} />
-            </div>
+            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs">User</div>
             <div className="text-sm truncate">
-              <p className="font-medium">Active User</p>
-              <p className="text-slate-400 text-xs truncate">{userEmail}</p>
+              <p className="font-medium truncate">{userEmail}</p>
             </div>
           </div>
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
@@ -76,8 +68,7 @@ export default function App() {
             {activeTab === 'history' && 'Scan History'}
           </h1>
           <div className="flex items-center gap-4 text-sm text-slate-500">
-            <span className="flex items-center gap-1"><Server size={16} className="text-blue-500" /> API: Online</span>
-            <span className="flex items-center gap-1"><Database size={16} className="text-green-500" /> DB: Connected</span>
+            <span className="flex items-center gap-1"><Server size={16} className="text-blue-500" /> API: Active</span>
           </div>
         </header>
 
@@ -91,7 +82,16 @@ export default function App() {
   );
 }
 
-// --- LOGIN & SIGNUP LOGIC ---
+// --- SUB-COMPONENTS (INHE HATA NA NAHI) ---
+
+function NavItem({ icon, label, isActive, onClick }) {
+  return (
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}>
+      {icon} <span className="font-medium">{label}</span>
+    </button>
+  );
+}
+
 function LoginScreen({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -101,64 +101,51 @@ function LoginScreen({ onLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
     const endpoint = isSignUp ? "/api/signup" : "/api/login";
-    
     try {
       const response = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
-
       if (response.ok) {
         localStorage.setItem("userEmail", email);
         onLogin(email);
       } else {
-        alert(data.message || "Auth Error");
+        alert(data.message || "Error occurred");
       }
     } catch (error) {
-      alert("Server error! Please check if Render Backend is Live.");
+      alert("Server is starting up... Please try again in 30 seconds.");
     }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-blue-600 p-8 text-center">
-          <Shield className="w-16 h-16 text-white mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-2">PhishGuard AI</h1>
-          <p className="text-blue-100">{isSignUp ? "Create new account" : "Sign in to your account"}</p>
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+        <div className="text-center mb-8">
+          <Shield className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold">{isSignUp ? "Join PhishGuard" : "Welcome Back"}</h2>
         </div>
-        <div className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" required placeholder="name@example.com" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" required placeholder="••••••••" />
-            </div>
-            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 mt-6">
-              {loading ? <Loader2 className="animate-spin" size={20} /> : (isSignUp ? 'Create Account' : 'Login to Dashboard')}
-            </button>
-          </form>
-          <div className="mt-6 text-center text-sm text-slate-500">
-            <button onClick={() => setIsSignUp(!isSignUp)} className="text-blue-600 hover:underline">
-              {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
-            </button>
-          </div>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input type="email" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" required />
+          <input type="password" placeholder="Password" value={password} onChange={(e)=>setPassword(e.target.value)} className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" required />
+          <button className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50">
+            {loading ? "Processing..." : (isSignUp ? "Sign Up" : "Login")}
+          </button>
+        </form>
+        <p className="text-center mt-6 text-sm text-slate-600">
+          {isSignUp ? "Have an account?" : "New here?"} 
+          <button onClick={()=>setIsSignUp(!isSignUp)} className="text-blue-600 ml-1 font-bold underline">
+            {isSignUp ? "Login" : "Create Account"}
+          </button>
+        </p>
       </div>
     </div>
   );
 }
 
-// --- SCANNER LOGIC (ASLI API SE) ---
 function ScannerView({ onScanComplete }) {
   const [inputValue, setInputValue] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -167,62 +154,97 @@ function ScannerView({ onScanComplete }) {
   const handleScan = async (e) => {
     e.preventDefault();
     if(!inputValue.trim()) return;
-    
     setIsAnalyzing(true);
-    setResult(null);
-
     try {
       const response = await fetch(`${API_URL}/api/scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: inputValue }),
       });
-
       const data = await response.json();
-      
       const finalResult = {
         id: Date.now(),
-        type: 'url',
         input: inputValue,
         date: new Date().toLocaleString(),
-        score: data.score,
-        level: data.score > 70 ? 'High' : data.score > 35 ? 'Medium' : 'Low',
-        status: data.prediction === 1 ? 'Phishing' : 'Safe',
-        flags: data.flags || []
+        score: data.score || 0,
+        status: data.prediction === 1 ? 'Phishing' : 'Safe'
       };
-      
       setResult(finalResult);
       onScanComplete(finalResult);
     } catch (error) {
-      alert("AI Scan failed! Check if Backend is live.");
+      alert("Scan failed. Backend is warming up.");
     }
     setIsAnalyzing(false);
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-sm border">
       {!result ? (
-        <form onSubmit={handleScan} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-          <label className="block text-sm font-medium text-slate-700 mb-2 font-bold">Paste Suspicious URL</label>
-          <input type="text" placeholder="http://suspicious-link.com" value={inputValue} onChange={(e) => setInputValue(e.target.value)} className="w-full px-4 py-3 border border-slate-300 rounded-xl mb-6 outline-none focus:ring-2 focus:ring-blue-500" disabled={isAnalyzing} />
-          <button type="submit" disabled={isAnalyzing || !inputValue.trim()} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl flex justify-center items-center gap-2">
-            {isAnalyzing ? <Loader2 className="animate-spin" /> : "Analyze with AI"}
+        <form onSubmit={handleScan}>
+          <h3 className="text-lg font-bold mb-4 text-slate-800 text-center">AI URL Scanner</h3>
+          <input type="text" value={inputValue} onChange={(e)=>setInputValue(e.target.value)} placeholder="Enter URL to scan..." className="w-full p-4 border rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none" />
+          <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all">
+            {isAnalyzing ? "Analyzing URL..." : "Check Security"}
           </button>
         </form>
       ) : (
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-           <div className={`p-6 border-b flex items-center gap-4 ${result.level === 'High' ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
-              <h2 className="text-2xl font-bold uppercase">{result.status}</h2>
-           </div>
-           <div className="p-8">
-              <p className="text-lg mb-4">Threat Score: <strong>{result.score}/100</strong></p>
-              <button onClick={() => setResult(null)} className="bg-slate-900 text-white px-6 py-2 rounded-lg">Scan Another</button>
-           </div>
+        <div className="text-center">
+          <div className={`p-4 rounded-xl mb-4 font-bold text-xl ${result.status === 'Safe' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {result.status.toUpperCase()}
+          </div>
+          <p className="mb-6">Threat Score: {result.score}/100</p>
+          <button onClick={()=>setResult(null)} className="text-blue-600 font-bold underline">Scan Another</button>
         </div>
       )}
     </div>
   );
 }
 
-// ... (Baki purane Utility Components jaise NavItem, DashboardView, HistoryView, StatCard, Badge wahi rakhein) ...
-// (Inhe aap apne purane code se niche copy-paste kar sakte hain)
+function DashboardView({ history, onNewScan }) {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-slate-500 text-sm font-medium mb-1">Total Scans</p>
+          <p className="text-3xl font-bold">{history.length}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-slate-500 text-sm font-medium mb-1">Threats Detected</p>
+          <p className="text-3xl font-bold text-red-600">{history.filter(s => s.status === 'Phishing').length}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-slate-500 text-sm font-medium mb-1">Safety Rating</p>
+          <p className="text-3xl font-bold text-green-600">Secure</p>
+        </div>
+      </div>
+      <button onClick={onNewScan} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200">Start New Scan</button>
+    </div>
+  );
+}
+
+function HistoryView({ history }) {
+  return (
+    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+      <table className="w-full text-left">
+        <thead className="bg-slate-50 border-b">
+          <tr>
+            <th className="p-4 font-bold text-sm">URL</th>
+            <th className="p-4 font-bold text-sm">Status</th>
+            <th className="p-4 font-bold text-sm">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {history.length === 0 ? (
+            <tr><td colSpan="3" className="p-8 text-center text-slate-400">No scans yet.</td></tr>
+          ) : history.map(item => (
+            <tr key={item.id} className="border-b last:border-0">
+              <td className="p-4 text-sm truncate max-w-xs">{item.input}</td>
+              <td className={`p-4 text-sm font-bold ${item.status === 'Safe' ? 'text-green-600' : 'text-red-600'}`}>{item.status}</td>
+              <td className="p-4 text-sm text-slate-500">{item.date}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

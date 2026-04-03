@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 // --- APNA RENDER URL YAHAN DALO ---
-const API_URL = "https://phishguard-backend.onrender.com"; 
+const API_URL = "https://phishguard-backend-nwnc.onrender.com"; 
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

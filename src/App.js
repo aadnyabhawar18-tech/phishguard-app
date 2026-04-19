@@ -82,8 +82,6 @@ export default function App() {
   );
 }
 
-// --- SUB-COMPONENTS (INHE HATA NA NAHI) ---
-
 function NavItem({ icon, label, isActive, onClick }) {
   return (
     <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}>
@@ -116,7 +114,7 @@ function LoginScreen({ onLogin }) {
         alert(data.message || "Error occurred");
       }
     } catch (error) {
-      alert("Server is starting up... Please try again in 30 seconds.");
+      alert("Connection Error. Please check if backend is running.");
     }
     setLoading(false);
   };
@@ -131,8 +129,8 @@ function LoginScreen({ onLogin }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="email" placeholder="Email" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" required />
           <input type="password" placeholder="Password" value={password} onChange={(e)=>setPassword(e.target.value)} className="w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" required />
-          <button className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50">
-            {loading ? "Processing..." : (isSignUp ? "Sign Up" : "Login")}
+          <button className="w-full bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 transition-all">
+            {loading ? <Loader2 className="animate-spin mx-auto" /> : (isSignUp ? "Sign Up" : "Login")}
           </button>
         </form>
         <p className="text-center mt-6 text-sm text-slate-600">
@@ -162,12 +160,14 @@ function ScannerView({ onScanComplete }) {
         body: JSON.stringify({ url: inputValue }),
       });
       const data = await response.json();
+      
       const finalResult = {
         id: Date.now(),
         input: inputValue,
         date: new Date().toLocaleString(),
         score: data.score || 0,
-        status: data.prediction === 1 ? 'Phishing' : 'Safe'
+        status: data.status || 'Safe',
+        flags: data.flags || []
       };
       setResult(finalResult);
       onScanComplete(finalResult);
@@ -181,70 +181,4 @@ function ScannerView({ onScanComplete }) {
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-sm border">
       {!result ? (
         <form onSubmit={handleScan}>
-          <h3 className="text-lg font-bold mb-4 text-slate-800 text-center">AI URL Scanner</h3>
-          <input type="text" value={inputValue} onChange={(e)=>setInputValue(e.target.value)} placeholder="Enter URL to scan..." className="w-full p-4 border rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none" />
-          <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all">
-            {isAnalyzing ? "Analyzing URL..." : "Check Security"}
-          </button>
-        </form>
-      ) : (
-        <div className="text-center">
-          <div className={`p-4 rounded-xl mb-4 font-bold text-xl ${result.status === 'Safe' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {result.status.toUpperCase()}
-          </div>
-          <p className="mb-6">Threat Score: {result.score}/100</p>
-          <button onClick={()=>setResult(null)} className="text-blue-600 font-bold underline">Scan Another</button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DashboardView({ history, onNewScan }) {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p className="text-slate-500 text-sm font-medium mb-1">Total Scans</p>
-          <p className="text-3xl font-bold">{history.length}</p>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p className="text-slate-500 text-sm font-medium mb-1">Threats Detected</p>
-          <p className="text-3xl font-bold text-red-600">{history.filter(s => s.status === 'Phishing').length}</p>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <p className="text-slate-500 text-sm font-medium mb-1">Safety Rating</p>
-          <p className="text-3xl font-bold text-green-600">Secure</p>
-        </div>
-      </div>
-      <button onClick={onNewScan} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200">Start New Scan</button>
-    </div>
-  );
-}
-
-function HistoryView({ history }) {
-  return (
-    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-      <table className="w-full text-left">
-        <thead className="bg-slate-50 border-b">
-          <tr>
-            <th className="p-4 font-bold text-sm">URL</th>
-            <th className="p-4 font-bold text-sm">Status</th>
-            <th className="p-4 font-bold text-sm">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {history.length === 0 ? (
-            <tr><td colSpan="3" className="p-8 text-center text-slate-400">No scans yet.</td></tr>
-          ) : history.map(item => (
-            <tr key={item.id} className="border-b last:border-0">
-              <td className="p-4 text-sm truncate max-w-xs">{item.input}</td>
-              <td className={`p-4 text-sm font-bold ${item.status === 'Safe' ? 'text-green-600' : 'text-red-600'}`}>{item.status}</td>
-              <td className="p-4 text-sm text-slate-500">{item.date}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+          <h3 className="
